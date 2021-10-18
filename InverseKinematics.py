@@ -48,7 +48,7 @@ def resolution_type_6(w, x, y, z1, z2):
     Fonction permettant de résoudre un système d'équation de la forme
     w.sin(t2) = x.cos(t1)+y.sin(t1)+z1
     w.cos(t2) = x.sin(t1)-y.cos(t1)+z2
-    Retourne [t1, t1'][t2, t2'] en radians.
+    Retourne t1, t1', t2, t2' en radians.
     """
     # Résolution par un système de type 2 en t1
     b1 = 2 * (z1 * y + z2 * x)
@@ -60,4 +60,24 @@ def resolution_type_6(w, x, y, z1, z2):
     t1_1 = resolution_type_3(w, 0, x * np.cos(t1) + y * np.sin(t1) + z1, 0, w, x * np.sin(t1) - y * np.cos(t1) + z2)
     t1_2 = resolution_type_3(w, 0, x * np.cos(t2) + y * np.sin(t2) + z1, 0, w, x * np.sin(t2) - y * np.cos(t2) + z2)
 
-    return [[t1, t2], [t1_1, t1_2]]
+    return t1, t2, t1_1, t1_2
+
+
+def inverse_kinematics_analytic(l1, l2, l3, X):
+    """
+    :param l1, l2, l3: paramètre du robot
+    :param X: vecteur représentant le point d'arrivé = [x, y, z]
+    :return: les 4 couples [t1, t2, t3] permettant d'atteindre X
+    """
+    x, y, z = X[0], X[1], X[2]
+
+    # Calcul des theta1
+    t1_1, t1_2 = resolution_type_2(x, -y, 0)
+
+    # Calcul des theta2 et theta3 pour theta1 = t1_1
+    t2_1, t2_2, t3_1, t3_2 = resolution_type_6(l3, z-l1, -(x*np.cos(t1_1)+y*np.sin(t1_1)), 0, -l2)
+
+    # Calcul des theta2 et theta3 pour theta1 = t1_2
+    t2_3, t2_4, t3_3, t3_4 = resolution_type_6(l3, z - l1, -(x * np.cos(t1_2) + y * np.sin(t1_2)), 0, -l2)
+
+    return [[t1_1, t2_1, t3_1], [t1_1, t2_2, t3_2], [t1_2, t2_3, t3_3], [t1_2, t2_4, t3_4]]
